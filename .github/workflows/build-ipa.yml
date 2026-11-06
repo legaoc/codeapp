@@ -22,9 +22,21 @@ jobs:
           ./downloadFrameworks.sh
         fi
 
-    - name: Compilar App
+    - name: Compilar App (Detección Automática)
       run: |
-        xcodebuild -project Code.xcodeproj -scheme Code -configuration Release -sdk iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath Build/
+        if ls *.xcworkspace 1> /dev/null 2>&1; then
+          TARGET="-workspace $(ls -d *.xcworkspace | head -n 1)"
+        else
+          TARGET="-project Code.xcodeproj"
+        fi
+        
+        echo "Archivo principal detectado: $TARGET"
+        xcodebuild $TARGET -list
+        
+        ESQUEMA=$(xcodebuild $TARGET -list | awk '/Schemes:/{f=1; next} /^[ \t]*$/{f=0} f{gsub(/^[ \t]+/, ""); print; exit}')
+        echo "El esquema a usar es: $ESQUEMA"
+        
+        xcodebuild $TARGET -scheme "$ESQUEMA" -configuration Release -sdk iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath Build/
         
         mkdir -p Payload
         mv Build/Build/Products/Release-iphoneos/*.app Payload/
