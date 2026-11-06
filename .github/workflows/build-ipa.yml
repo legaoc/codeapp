@@ -24,7 +24,7 @@ jobs:
 
     - name: Compilar App
       run: |
-        xcodebuild -project Code.xcodeproj -scheme CodeApp -configuration Release -sdk iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath Build/
+        xcodebuild -project Code.xcodeproj -scheme Code -configuration Release -sdk iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath Build/
         
         mkdir -p Payload
         mv Build/Build/Products/Release-iphoneos/*.app Payload/
