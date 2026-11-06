@@ -1,0 +1,37 @@
+name: Build CodeApp IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Preparar dependencias de CodeApp
+      run: |
+        if [ -f "downloadFrameworks.sh" ]; then
+          chmod +x downloadFrameworks.sh
+          ./downloadFrameworks.sh
+        fi
+
+    - name: Compilar App
+      run: |
+        xcodebuild -project Code.xcodeproj -scheme CodeApp -configuration Release -sdk iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath Build/
+        
+        mkdir -p Payload
+        mv Build/Build/Products/Release-iphoneos/*.app Payload/
+        zip -r CodeApp-1.12.ipa Payload
+
+    - name: Subir IPA a Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: CodeApp-1.12-IPA
+        path: CodeApp-1.12.ipa
